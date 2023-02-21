@@ -9,6 +9,7 @@ import random
 from datetime import datetime
 import discord
 from discord.ext import commands
+import discord.ext
 from time import sleep
 import bot_secrets
 
@@ -18,7 +19,8 @@ BOT_TOKEN = bot_secrets.token
 bet_channel = bot_secrets.bet_channel
 bookie = bot_secrets.bookie
 ### Decides the prefix of the bot. Default is "!". So for example to type the help command you would type !help.
-bot = commands.Bot(command_prefix='!')
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='!', intents=intents)
 ### Bad words go in here. If users type these words in any message the message will be deleted and they lose 100 coins.
 bad_words = ("")
 ### Slurs go in here. If users type these words in any message the message will be deleted and they lose all their coins.
@@ -388,8 +390,10 @@ async def bet(ctx, choice, amount):
         coinchange(author, -bet)
         await ctx.send(f"{author} hat {bet} Nuggets auf {choice} gesetzt.\n")
         # Sends the given options back in one list for better viewability.
+        ganzesErgebnis = "Aktuelle Einsätze:\n"
         for n, i in enumerate(options):
             coins_on_i = 0
+            teilErgebnis = ""
             # Itterates over a list wich has the amount of what a user bet(index 0) and the name of the option(index 1).
             for bet, choice in both.values():
                 # If the name of what a user bet on matches the name of an option.
@@ -397,7 +401,10 @@ async def bet(ctx, choice, amount):
                     coins_on_i += int(bet)
             # I do it this way instead of writing directly to the dictionary to avoid KeyErrors when there is no value set to an option.
             sum_of_bets_per_option[i] = coins_on_i
-            await ctx.send(f"**{n+1} {i}**\nGesamt: {sum_of_bets_per_option[i]}")
+            teilErgebnis = str(
+                (f"**{n+1} {i}** - {sum_of_bets_per_option[i]}\n"))
+            ganzesErgebnis += teilErgebnis
+        await ctx.send(ganzesErgebnis)
         save_prediction()
 
 
